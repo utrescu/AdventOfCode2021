@@ -8,17 +8,6 @@ import (
 	"strings"
 )
 
-type location struct {
-	position int
-	depth    int
-	aim      int
-}
-
-type move struct {
-	moviment string
-	units    int
-}
-
 func stringToInt(str string) (int, error) {
 	nonFractionalPart := strings.Split(str, " ")
 	return strconv.Atoi(nonFractionalPart[0])
@@ -57,6 +46,17 @@ func main() {
 	fmt.Println("Part 1:", part1.depth*part1.position, "(", part1, ")")
 	fmt.Println("Part 2:", part2.depth*part2.position, "(", part2, ")")
 
+}
+
+type location struct {
+	position int
+	depth    int
+	aim      int
+}
+
+type move struct {
+	moviment string
+	units    int
 }
 
 func moveit(moviments []move) (location, location) {
