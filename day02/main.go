@@ -52,49 +52,31 @@ func main() {
 		panic("File read failed")
 	}
 
-	part1 := moveit(moves)
-	fmt.Println("Part 1:", part1.depth*part1.position, "(", part1, ")")
+	part1, part2 := moveit(moves)
 
-	part2 := moveit2(moves)
+	fmt.Println("Part 1:", part1.depth*part1.position, "(", part1, ")")
 	fmt.Println("Part 2:", part2.depth*part2.position, "(", part2, ")")
 
 }
 
-func moveit(moviments []move) location {
+func moveit(moviments []move) (location, location) {
 	posicio := location{position: 0, depth: 0}
+	posicio2 := location{position: 0, depth: 0, aim: 0}
 
 	for _, moviment := range moviments {
 		switch moviment.moviment {
 		case "forward":
 			posicio.position += moviment.units
+			posicio2.position += moviment.units
+			posicio2.depth += posicio2.aim * moviment.units
 		case "down":
 			posicio.depth += moviment.units
+			posicio2.aim += moviment.units
 		case "up":
 			posicio.depth -= moviment.units
+			posicio2.aim -= moviment.units
 		}
 	}
 
-	return posicio
-}
-
-func moveit2(moviments []move) location {
-	posicio := location{position: 0, depth: 0, aim: 0}
-
-	for _, moviment := range moviments {
-		fmt.Println("....", moviment)
-		switch moviment.moviment {
-		case "forward":
-			posicio.position += moviment.units
-			posicio.depth += posicio.aim * moviment.units
-		case "down":
-			// posicio.depth += moviment.units
-			posicio.aim += moviment.units
-		case "up":
-			// posicio.depth -= moviment.units
-			posicio.aim -= moviment.units
-		}
-		fmt.Println(posicio)
-	}
-
-	return posicio
+	return posicio, posicio2
 }
