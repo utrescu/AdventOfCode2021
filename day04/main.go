@@ -50,14 +50,19 @@ func readLines(path string) ([]int, []board, error) {
 		line := strings.TrimRight(scanner.Text(), " ")
 		if len(line) == 0 {
 			// New board
+			butlleta.columnCount = make([]int, len(butlleta.Lines[0]))
 			boards = append(boards, butlleta)
+
 			butlleta = board{}
 		} else {
 			linenums := convertToInts(strings.Split(line, " "))
 			butlleta.Lines = append(butlleta.Lines, linenums)
+			butlleta.rowCount = append(butlleta.rowCount, 0)
 		}
 
 	}
+
+	butlleta.columnCount = make([]int, len(butlleta.Lines[0]))
 	boards = append(boards, butlleta)
 	return numbers, boards, scanner.Err()
 }
@@ -70,6 +75,10 @@ func main() {
 
 	part1 := play1(numbers, boards)
 	fmt.Println("Part 1:", part1)
+
+	for _, butlleta := range boards {
+		butlleta.cleanCounters()
+	}
 
 	part2 := play2(numbers, boards)
 	fmt.Println("Part 2:", part2)
@@ -93,6 +102,17 @@ type board struct {
 	columnCount []int
 }
 
+func (b *board) cleanCounters() {
+	for i := range b.rowCount {
+		b.rowCount[i] = 0
+
+	}
+
+	for i := range b.columnCount {
+		b.columnCount[i] = 0
+	}
+}
+
 func (b board) HaveLineEmpty() bool {
 	return HasValue(b.rowCount, len(b.Lines))
 }
@@ -103,12 +123,7 @@ func (b board) HaveColumnEmpty() bool {
 
 func (b *board) RemoveNumber(number int) {
 	var boardresult [][]int
-	if b.columnCount == nil {
-		b.columnCount = make([]int, len(b.Lines[0]))
-	}
-	if b.rowCount == nil {
-		b.rowCount = make([]int, len(b.Lines))
-	}
+
 	for row, line := range b.Lines {
 		var newline []int
 		for col, value := range line {
