@@ -11,13 +11,14 @@ import (
 
 const filename = "input"
 
-func readLines(path string) ([]Line, error) {
+func readLines(path string) ([]Line, int, int, error) {
 	file, err := os.Open(path)
 	if err != nil {
-		return nil, err
+		return nil, 0, 0, err
 	}
 	defer file.Close()
-
+	maxX := 0
+	maxY := 0
 	var lines []Line
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
@@ -30,9 +31,16 @@ func readLines(path string) ([]Line, error) {
 		last.createPoint(textPoints[1])
 		linia.first = first
 		linia.last = last
+		x, y := linia.max()
+		if x > maxX {
+			maxX = x
+		}
+		if y > maxY {
+			maxY = y
+		}
 		lines = append(lines, linia)
 	}
-	return lines, scanner.Err()
+	return lines, maxX, maxY, scanner.Err()
 }
 
 // --- Point ----
@@ -83,15 +91,8 @@ type Line struct {
 }
 
 func (l Line) max() (int, int) {
-	x := l.first.x
-	if l.last.x > x {
-		x = l.last.x
-	}
-	y := l.last.y
-	if l.last.y > y {
-		y = l.last.y
-	}
-	return int(x), int(y)
+
+	return int(math.Max(l.first.x, l.last.x)), int(math.Max(l.first.y, l.last.y))
 }
 
 func (l Line) Path() []Point {
@@ -110,7 +111,7 @@ func (l Line) Path() []Point {
 // ---------------------------------------------------
 
 func main() {
-	lines, err := readLines(filename)
+	lines, maxX, maxY, err := readLines(filename)
 	if err != nil {
 		panic("File read failed")
 	}
@@ -122,26 +123,19 @@ func main() {
 		}
 	}
 
-	result := Part(straightLines)
+	result := Part(straightLines, maxX, maxY)
 	fmt.Println("Part 1:", result)
 
-	result2 := Part(lines)
+	result2 := Part(lines, maxX, maxY)
 	fmt.Println("Part 2:", result2)
 
 }
 
-func Part(lines []Line) int {
-	var board [1000][1000]int
-	maxX := 0
-	maxY := 0
-	for _, line := range lines {
-		x, y := line.max()
-		if x > maxX {
-			maxX = x
-		}
-		if y > maxY {
-			maxY = y
-		}
+func Part(lines []Line, maxX int, maxY int) int {
+
+	board := make([][]int, maxY+1)
+	for i := 0; i < len(board); i++ {
+		board[i] = make([]int, maxX+1)
 	}
 
 	for _, line := range lines {
@@ -153,8 +147,8 @@ func Part(lines []Line) int {
 	}
 
 	resultat := 0
-	for line := 0; line <= maxY; line++ {
-		for column := 0; column <= maxX; column++ {
+	for line := 0; line < len(board); line++ {
+		for column := 0; column < len(board[line]); column++ {
 			if board[line][column] > 1 {
 				resultat++
 			}
