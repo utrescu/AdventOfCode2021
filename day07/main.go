@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"math"
 	"os"
 	"sort"
 	"strconv"
@@ -54,6 +55,7 @@ func abs(a int) int {
 	return a * -1
 }
 
+// Part1: semblaria que la distancia més curta ha de ser la que va a la mediana
 func Part1(crabs []int) int {
 	sort.Ints(crabs)
 	median := len(crabs) / 2
@@ -72,7 +74,8 @@ func Mitjana(crabs []int) int {
 	for _, s := range crabs {
 		suma += s
 	}
-	return int(float64(suma) / float64(len(crabs)))
+	mitjana := float64(suma) / float64(len(crabs))
+	return int(math.Round(mitjana))
 }
 
 func calculateMovesCost(crabs []int, mitjana int) int {
@@ -86,17 +89,14 @@ func calculateMovesCost(crabs []int, mitjana int) int {
 	return sum
 }
 
+// Part 2: La mitjana no sempre és la solució correcta, a vegades és la mitjana
+//         -1 (suposo que pels arrodoniments o per la quantitat de cada costat)
 func Part2(crabs []int) int {
 	mitjana := Mitjana(crabs)
-
-	// xapussa: per corregir l'error dels decimals ...
-	v1 := calculateMovesCost(crabs, mitjana)
-	v2 := calculateMovesCost(crabs, mitjana+1)
-
-	if v1 > v2 {
-		fmt.Println("buf!")
-		return v2
+	candidate := calculateMovesCost(crabs, mitjana)
+	candidate2 := calculateMovesCost(crabs, mitjana-1)
+	if candidate > candidate2 {
+		return candidate2
 	}
-
-	return v1
+	return candidate
 }

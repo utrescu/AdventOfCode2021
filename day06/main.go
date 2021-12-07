@@ -55,6 +55,10 @@ func main() {
 // 	return len(fish)
 // }
 
+// Part2: En comptes de fer-ho un a un, com que sempre van al mateix els agrupo i els
+//        faig tots de cop. Així com a màxim només n'hi ha 8
+//
+//    AMB L'ALTRE SISTEMA S'ACABA LA MEMÒRIA :-D. Bon exemple
 func Part2(fish []int, days int) int {
 	groupedFish := make(map[int]int)
 
