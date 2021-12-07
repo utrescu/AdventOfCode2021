@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"math"
 	"os"
 	"sort"
 	"strconv"
@@ -73,10 +72,10 @@ func Mitjana(crabs []int) int {
 	for _, s := range crabs {
 		suma += s
 	}
-	return int(math.Round(float64(suma) / float64(len(crabs))))
+	return int(float64(suma) / float64(len(crabs)))
 }
 
-func calculateMoves(crabs []int, mitjana int) int {
+func calculateMovesCost(crabs []int, mitjana int) int {
 	sum := 0
 	for _, crab := range crabs {
 		moves := abs(crab - mitjana)
@@ -89,14 +88,6 @@ func calculateMoves(crabs []int, mitjana int) int {
 
 func Part2(crabs []int) int {
 	mitjana := Mitjana(crabs)
-
-	// xapussa: per corregir l'error dels decimals ...
-	v1 := calculateMoves(crabs, mitjana)
-	v2 := calculateMoves(crabs, mitjana-1)
-
-	if v1 > v2 {
-		return v2
-	}
-
-	return v1
+	resultat := calculateMovesCost(crabs, mitjana)
+	return resultat
 }
