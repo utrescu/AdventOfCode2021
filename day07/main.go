@@ -88,6 +88,15 @@ func calculateMovesCost(crabs []int, mitjana int) int {
 
 func Part2(crabs []int) int {
 	mitjana := Mitjana(crabs)
-	resultat := calculateMovesCost(crabs, mitjana)
-	return resultat
+
+	// xapussa: per corregir l'error dels decimals ...
+	v1 := calculateMovesCost(crabs, mitjana)
+	v2 := calculateMovesCost(crabs, mitjana+1)
+
+	if v1 > v2 {
+		fmt.Println("buf!")
+		return v2
+	}
+
+	return v1
 }
