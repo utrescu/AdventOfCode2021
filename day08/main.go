@@ -4,25 +4,43 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 )
 
+// --- Utils
+
+func StringToRuneSlice(s string) []rune {
+	var r []rune
+	for _, runeValue := range s {
+		r = append(r, runeValue)
+	}
+	return r
+}
+
+func SortStringByCharacter(s string) string {
+	r := StringToRuneSlice(s)
+	sort.Slice(r, func(i, j int) bool {
+		return r[i] < r[j]
+	})
+	return string(r)
+}
+
+// Matches retorna les lletres iguals d'un string
+func matches(a string, b string) int {
+	sum := 0
+	for _, c := range strings.Split(b, "") {
+		if strings.Contains(a, c) {
+			sum++
+		}
+	}
+	return sum
+}
+
 func stringToInt(str string) (int, error) {
 	nonFractionalPart := strings.Split(str, ".")
 	return strconv.Atoi(nonFractionalPart[0])
-}
-
-func stringArrayToInt(stringArray []string) ([]int, error) {
-	var result []int
-	for _, value := range stringArray {
-		numero, err := stringToInt(value)
-		if err != nil {
-			return nil, err
-		}
-		result = append(result, numero)
-	}
-	return result, nil
 }
 
 // readLines reads a whole file into memory
@@ -44,36 +62,56 @@ func readLines(path string) ([]Segments, error) {
 	return lines, scanner.Err()
 }
 
-func main() {
+// ---- Program
 
-	digits := []Digit{
-		{number: 0, segments: []string{"a", "b", "c", "e", "f", "g"}},
-		{number: 1, segments: []string{"c", "f"}},
-		{number: 2, segments: []string{"a", "c", "d", "e", "g"}},
-		{number: 3, segments: []string{"a", "c", "d", "f", "g"}},
-		{number: 4, segments: []string{"b", "c", "d", "f"}},
-		{number: 5, segments: []string{"a", "b", "d", "f", "g"}},
-		{number: 6, segments: []string{"a", "b", "d", "e", "f", "g"}},
-		{number: 6, segments: []string{"a", "c", "f"}},
-		{number: 7, segments: []string{"a", "b", "c", "d", "e", "f", "g"}},
-		{number: 8, segments: []string{"a", "b", "c", "e", "f", "g"}},
-		{number: 9, segments: []string{"a", "b", "c", "d", "f", "g"}},
+func digits() []Digit {
+	return []Digit{
+		{number: 0, segments: "abcefg"},
+		{number: 1, segments: "cf"},
+		{number: 2, segments: "acdeg"},
+		{number: 3, segments: "acdfg"},
+		{number: 4, segments: "bcdf"},
+		{number: 5, segments: "abdfg"},
+		{number: 6, segments: "abdefg"},
+		{number: 7, segments: "acf"},
+		{number: 8, segments: "abcdefg"},
+		{number: 9, segments: "abcdfg"},
 	}
+}
+
+func main() {
 
 	data, err := readLines("input")
 	if err != nil {
 		panic("File read failed")
 	}
 
-	result1 := Part1(data, digits)
-
+	result1 := Part1(data)
 	fmt.Println("Part 1:", result1)
+
+	result2 := Part2(data)
+	fmt.Println("Part 2:", result2)
 
 }
 
-func Part1(segments []Segments, digits []Digit) int {
+type Digit struct {
+	number   int
+	segments string
+}
+
+func (d Digit) numSegments() int {
+	return len(d.segments)
+}
+
+type Segments struct {
+	wires   []string
+	outputs []string
+}
+
+func Part1(segments []Segments) int {
 
 	sum := 0
+	digits := digits()
 	for _, segment := range segments {
 		for _, output := range segment.outputs {
 			switch len(output) {
@@ -91,16 +129,81 @@ func Part1(segments []Segments, digits []Digit) int {
 	return sum
 }
 
-type Digit struct {
-	number   int
-	segments []string
+func Part2(segments []Segments) int {
+
+	sum := 0
+	for _, segment := range segments {
+		number, _ := stringToInt(DeduceLine(segment))
+		sum += number
+	}
+	return sum
 }
 
-func (d Digit) numSegments() int {
-	return len(d.segments)
-}
+func DeduceLine(segment Segments) string {
+	digits := digits()
 
-type Segments struct {
-	wires   []string
-	outputs []string
+	candidates := make(map[int][]string)
+
+	// Obtenir candidats per cada número
+	for _, data := range segment.wires {
+		for _, digit := range digits {
+			if digit.numSegments() == len(data) {
+				candidates[digit.number] = append(candidates[digit.number], data)
+			}
+
+		}
+
+	}
+
+	// Deduir els números
+	found := make(map[string]int)
+	for len(candidates) != 0 {
+		newCandidates := make(map[int][]string)
+		for number, candidate := range candidates {
+			// Si només hi ha un candidat ja tenim la solució
+			if len(candidate) == 1 {
+				found[candidate[0]] = number
+			} else {
+				possibles := make([]string, 0)
+				for _, possible := range candidate {
+					// Els que ja han estat trobats ja no poden ser candidats
+					_, ok := found[possible]
+					if !ok {
+						count := 0
+						// Si no té el mateix número de lletres iguals que el correcte no és un candidat
+						for value, numberfound := range found {
+							if matches(possible, value) == matches(digits[number].segments, digits[numberfound].segments) {
+								count++
+							}
+						}
+						if count == len(found) {
+							possibles = append(possibles, possible)
+						}
+					}
+
+				}
+				newCandidates[number] = possibles
+			}
+
+		}
+		candidates = newCandidates
+
+	}
+
+	// Com que la clau pot estar desordenada, les ordeno per obtenir el dígit
+	result := ""
+	for _, value := range segment.outputs {
+		var digit int
+		valueSorted := SortStringByCharacter(value)
+		for k, value2 := range found {
+			keySorted := SortStringByCharacter(k)
+			if keySorted == valueSorted {
+				digit = value2
+				break
+			}
+		}
+		result = result + fmt.Sprintf("%d", digit)
+	}
+
+	return result
 }
