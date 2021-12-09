@@ -36,8 +36,7 @@ func readLines(path string) (Hotmap, error) {
 	var lines [][]int
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		line := scanner.Text()
-		linearray, _ := stringArrayToInt(strings.Split(line, ""))
+		linearray, _ := stringArrayToInt(strings.Split(scanner.Text(), ""))
 		lines = append(lines, linearray)
 	}
 
@@ -62,6 +61,7 @@ type Hotmap struct {
 	cells [][]int
 }
 
+// Adjacents retorna les posicions adjacents a la especificada
 func (h Hotmap) Adjacents(row int, col int) []Position {
 	result := make([]Position, 0)
 
@@ -82,6 +82,7 @@ func (h Hotmap) Adjacents(row int, col int) []Position {
 	return result
 }
 
+// AdjacentValues retorna els valors adjacents a la cel·la
 func (h Hotmap) AdjacentValues(row int, col int) []int {
 	result := make([]int, 0)
 
@@ -94,7 +95,8 @@ func (h Hotmap) AdjacentValues(row int, col int) []int {
 	return result
 }
 
-func (h Hotmap) IsHotmap(row int, col int) bool {
+// IsLowPoint diu si el punt és un LowPoint
+func (h Hotmap) IsLowPoint(row int, col int) bool {
 	data := h.AdjacentValues(row, col)
 	me := h.cells[row][col]
 	for _, d := range data {
@@ -105,14 +107,17 @@ func (h Hotmap) IsHotmap(row int, col int) bool {
 	return true
 }
 
+// Get retorna el valor de la posició actual
 func (h Hotmap) Get(p Position) int {
 	return h.cells[p.row][p.col]
 }
 
+// Retorna les posicions adjacents a la posició especificada
 func (h Hotmap) AdjacentsPosition(p Position) []Position {
 	return h.Adjacents(p.row, p.col)
 }
 
+// Bassins Calcula el valor del "bassin" del punt
 func (h Hotmap) Basins(row int, col int) int {
 	if h.cells[row][col] == 9 {
 		return 0
@@ -144,36 +149,25 @@ func main() {
 		panic("File read failed")
 	}
 
-	result1 := Part1(mapaCalor)
+	result1, result2 := Part(mapaCalor)
 	fmt.Println("Part 1:", result1)
-
-	result2 := Part2(mapaCalor)
 	fmt.Println("Part 2:", result2)
 }
 
-func Part1(hotmap Hotmap) int {
+func Part(hotmap Hotmap) (int, int) {
+	results := make([]int, 0)
 	sum := 0
 	for row := 0; row < len(hotmap.cells); row++ {
 		for col := 0; col < len(hotmap.cells[0]); col++ {
-			if hotmap.IsHotmap(row, col) {
+			if hotmap.IsLowPoint(row, col) {
+				// Part 1
 				sum += hotmap.cells[row][col] + 1
-			}
-		}
-	}
-	return sum
-}
-
-func Part2(hotmap Hotmap) int {
-	results := make([]int, 0)
-	for row := 0; row < len(hotmap.cells); row++ {
-		for col := 0; col < len(hotmap.cells[0]); col++ {
-			if hotmap.IsHotmap(row, col) {
-				value := hotmap.Basins(row, col)
-				results = append(results, value)
+				// Part 2
+				results = append(results, hotmap.Basins(row, col))
 			}
 		}
 	}
 
 	sort.Sort(sort.Reverse(sort.IntSlice(results)))
-	return results[0] * results[1] * results[2]
+	return sum, results[0] * results[1] * results[2]
 }
