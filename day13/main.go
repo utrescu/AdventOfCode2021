@@ -81,6 +81,8 @@ func main() {
 
 // --- Common
 
+const MAXINT = int(^uint(0) >> 1)
+
 // FoldIn: Plega el paper pel lloc indicat i retorna el nou
 func FoldIn(punts map[Point]string, fold Fold) map[Point]string {
 	plegay := 1000
@@ -89,10 +91,10 @@ func FoldIn(punts map[Point]string, fold Fold) map[Point]string {
 	nousPunts := make(map[Point]string)
 	if fold.dir == "x" {
 		plegax = fold.value
-		plegay = 1000
+		plegay = MAXINT
 	} else {
 		plegay = fold.value
-		plegax = 1000
+		plegax = MAXINT
 	}
 	for punt := range punts {
 		x := punt.x
