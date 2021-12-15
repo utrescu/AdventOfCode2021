@@ -166,21 +166,16 @@ func Part1(cave Cave) int {
 // -- Part 2
 
 func Part2(cave Cave, expansion int) int {
-
-	// Generate map
-	maxicave := ExpandMap(cave, expansion)
-	// Call part1
-	return Part1(maxicave)
+	maxiCave := ExpandMap(cave, expansion)
+	return Part1(maxiCave)
 
 }
 
 func ExpandMap(cave Cave, expansion int) Cave {
 	originalWidth := len(cave.cells[0])
-	newHeight := len(cave.cells) * expansion
 
 	newCells := make([][]Node, 0)
 
-	// First rows
 	for row := range cave.cells {
 		newrow := make([]Node, originalWidth*expansion)
 		for col, value := range cave.cells[row] {
@@ -195,8 +190,9 @@ func ExpandMap(cave Cave, expansion int) Cave {
 		newCells = append(newCells, newrow)
 	}
 
-	// Other rows 1 + (item - w)
-	for len(newCells) < newHeight {
+	expectedHeight := len(cave.cells) * expansion
+
+	for len(newCells) < expectedHeight {
 
 		currentCell := len(newCells)
 		previousCell := currentCell - originalWidth
@@ -204,7 +200,7 @@ func ExpandMap(cave Cave, expansion int) Cave {
 		newRow := make([]Node, 0)
 		previousrow := newCells[previousCell]
 		for _, value := range previousrow {
-			cost := (value.cost+1)%9 + 1
+			cost := (value.cost + 1)
 			if cost == 10 {
 				cost = 1
 			}
@@ -213,5 +209,6 @@ func ExpandMap(cave Cave, expansion int) Cave {
 		newCells = append(newCells, newRow)
 
 	}
+
 	return Cave{cells: newCells}
 }
