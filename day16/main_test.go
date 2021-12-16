@@ -33,7 +33,7 @@ func TestDecode(t *testing.T) {
 		testname := tt.tipe
 		t.Run(testname, func(t *testing.T) {
 
-			version, _, _ := decode(0, tt.input)
+			version, _, _ := decode(tt.input)
 
 			if !Equal(version, tt.version) {
 				t.Errorf("La versió %d no és la que esperava %d", version, tt.version)

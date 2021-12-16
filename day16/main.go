@@ -8,73 +8,9 @@ import (
 	"strings"
 )
 
-func Hex2Bits(code string) string {
+const FILENAME = "input"
 
-	h2b := map[string]string{
-		"0": "0000",
-		"1": "0001",
-		"2": "0010",
-		"3": "0011",
-		"4": "0100",
-		"5": "0101",
-		"6": "0110",
-		"7": "0111",
-		"8": "1000",
-		"9": "1001",
-		"A": "1010",
-		"B": "1011",
-		"C": "1100",
-		"D": "1101",
-		"E": "1110",
-		"F": "1111",
-	}
-
-	result := ""
-	for _, digit := range code {
-		result += h2b[string(digit)]
-	}
-	return result
-}
-
-func readLines(path string) (string, error) {
-	file, err := os.Open(path)
-
-	var line string
-
-	if err != nil {
-		return "", err
-	}
-	defer file.Close()
-
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		line = scanner.Text()
-	}
-	return line, scanner.Err()
-}
-
-func main() {
-
-	data, err := readLines(FILENAME)
-	if err != nil {
-		panic("File read failed")
-	}
-
-	result := Part1(data)
-	fmt.Println("Part 1", result)
-
-	result = Part2(data)
-	fmt.Println("Part 2", result)
-}
-
-func ConvertToNumber(bits string) int {
-	output, err := strconv.ParseInt(bits, 2, 64)
-	if err != nil {
-		fmt.Println(err)
-		panic(err)
-	}
-	return int(output)
-}
+// -- Utils
 
 func sum(numbers []int) int {
 	sum := 0
@@ -138,7 +74,97 @@ func equal(numbers []int) int {
 	return 0
 }
 
-func decode(num int, data string) ([]int, int, string) {
+func ConvertToNumber(bits string) int {
+	output, err := strconv.ParseInt(bits, 2, 64)
+	if err != nil {
+		fmt.Println(err)
+		panic(err)
+	}
+	return int(output)
+}
+
+func Hex2Bits(code string) string {
+
+	h2b := map[string]string{
+		"0": "0000",
+		"1": "0001",
+		"2": "0010",
+		"3": "0011",
+		"4": "0100",
+		"5": "0101",
+		"6": "0110",
+		"7": "0111",
+		"8": "1000",
+		"9": "1001",
+		"A": "1010",
+		"B": "1011",
+		"C": "1100",
+		"D": "1101",
+		"E": "1110",
+		"F": "1111",
+	}
+
+	result := ""
+	for _, digit := range code {
+		result += h2b[string(digit)]
+	}
+	return result
+}
+
+func readLines(path string) (string, error) {
+	file, err := os.Open(path)
+
+	var line string
+
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line = scanner.Text()
+	}
+	return line, scanner.Err()
+}
+
+// ----- Start ------
+
+func main() {
+
+	data, err := readLines(FILENAME)
+	if err != nil {
+		panic("File read failed")
+	}
+
+	result := Part1(data)
+	fmt.Println("Part 1", result)
+
+	result = Part2(data)
+	fmt.Println("Part 2", result)
+}
+
+func Part1(data string) int {
+
+	toDecode := Hex2Bits(data)
+
+	versions, _, _ := decode(toDecode)
+
+	return sum(versions)
+
+}
+
+func Part2(data string) int {
+	toDecode := Hex2Bits(data)
+
+	_, values, _ := decode(toDecode)
+
+	return values
+}
+
+// decode descodifica el binari per obtenir els números i les
+// operacions.
+func decode(data string) ([]int, int, string) {
 
 	isValid := strings.Replace(data, "0", "", -1)
 	if len(isValid) == 0 {
@@ -178,7 +204,7 @@ func decode(num int, data string) ([]int, int, string) {
 
 			toDecode := data[22 : 22+bits]
 			for len(toDecode) != 0 {
-				version, number, data := decode(num+1, toDecode)
+				version, number, data := decode(toDecode)
 				if len(version) != 0 {
 					numbers = append(numbers, number)
 
@@ -193,7 +219,7 @@ func decode(num int, data string) ([]int, int, string) {
 			undecoded = data[18:]
 
 			for packets > 0 {
-				version, number, data := decode(num+1, undecoded)
+				version, number, data := decode(undecoded)
 				if len(version) != 0 {
 					numbers = append(numbers, number)
 					versions = append(versions, version...)
@@ -202,6 +228,8 @@ func decode(num int, data string) ([]int, int, string) {
 				packets--
 			}
 		}
+
+		// Per Part 2
 		switch typeid {
 		case 0: // suma
 			result = sum(numbers)
@@ -222,24 +250,4 @@ func decode(num int, data string) ([]int, int, string) {
 	}
 
 	return versions, result, undecoded
-}
-
-func Part1(data string) int {
-
-	toDecode := Hex2Bits(data)
-
-	versions, _, _ := decode(0, toDecode)
-
-	return sum(versions)
-
-}
-
-const FILENAME = "input"
-
-func Part2(data string) int {
-	toDecode := Hex2Bits(data)
-
-	_, values, _ := decode(0, toDecode)
-
-	return values
 }
