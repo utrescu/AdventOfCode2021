@@ -161,7 +161,7 @@ Add up all of the snailfish numbers from the homework assignment in the order th
 
 ## Part 2
 
-ou notice a second question on the back of the homework assignment:
+You notice a second question on the back of the homework assignment:
 
 What is the largest magnitude you can get from adding only two of the snailfish numbers?
 
@@ -180,6 +180,6 @@ Again considering the last example homework assignment above:
     [[2,[[7,7],7]],[[5,8],[[9,3],[0,2]]]]
     [[[[5,2],5],[8,[3,7]]],[[5,[7,5]],[4,4]]]
 
-The largest magnitude of the sum of any two snailfish numbers in this list is **3993**. This is the magnitude of [[2,[[7,7],7]],`[[5,8],[[9,3],[0,2]]]] + [[[0,[5,8]],[[1,7],[9,6]]],[[4,[1,2]],[[1,4],2]]], which reduces to [[[[7,8],[6,6]],[[6,0],[7,7]]],[[[7,8],[8,8]],[[7,9],[0,6]]]]`.
+The largest magnitude of the sum of any two snailfish numbers in this list is **3993**. This is the magnitude of `[[2,[[7,7],7]],[[5,8],[[9,3],[0,2]]]]` + `[[[0,[5,8]],[[1,7],[9,6]]],[[4,[1,2]],[[1,4],2]]]`, which reduces to `[[[[7,8],[6,6]],[[6,0],[7,7]]],[[[7,8],[8,8]],[[7,9],[0,6]]]]`.
 
-What is the largest magnitude of any sum of two different snailfish numbers from the homework assignment?
+**What is the largest magnitude of any sum of two different snailfish numbers from the homework assignment?**
