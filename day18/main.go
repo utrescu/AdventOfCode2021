@@ -3,18 +3,20 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"log"
 	"math"
 	"os"
 	"strconv"
 	"strings"
 )
 
+// --- UTILS
+
 func StringToInt(str string) (int, error) {
 	nonFractionalPart := strings.Split(str, ".")
 	return strconv.Atoi(nonFractionalPart[0])
 }
 
+// Parse string (he suat)
 func readLines(path string) ([]*SnailNumber, error) {
 	file, err := os.Open(path)
 	if err != nil {
@@ -25,46 +27,35 @@ func readLines(path string) ([]*SnailNumber, error) {
 	scanner := bufio.NewScanner(file)
 	numbers := make([]*SnailNumber, 0, 1)
 	for scanner.Scan() {
-		number := &SnailNumber{}
-		start := number
+		nextNumber := &SnailNumber{}
+		root := nextNumber
 		line := scanner.Text()
-		for _, symbol := range line {
-			switch symbol {
+		for _, character := range line {
+			switch character {
 			case '[':
-				number.child1 = &SnailNumber{parent: number}
-				number.child2 = &SnailNumber{parent: number}
-				number = number.child1
-			case ',':
-				number = number.parent.child2
+				nextNumber.child1 = &SnailNumber{parent: nextNumber}
+				nextNumber.child2 = &SnailNumber{parent: nextNumber}
+				// child1 is ..
+				nextNumber = nextNumber.child1
 			case ']':
-				number = number.parent
+				nextNumber = nextNumber.parent
+			case ',':
+				// child2 is ..
+				nextNumber = nextNumber.parent.child2
 			default:
-				parsed, err := strconv.Atoi(string(symbol))
-				if err != nil {
-					log.Fatalf("wrong input %s", line)
-				}
-				number.value = parsed
+				// només hi ha números d'una xifra
+				numero, _ := StringToInt(string(character))
+				nextNumber.value = numero
 			}
 		}
-		numbers = append(numbers, start)
+		numbers = append(numbers, root)
 	}
 
 	return numbers, scanner.Err()
 
 }
 
-const FILENAME = "input"
-
-func main() {
-	numbers, err := readLines(FILENAME)
-	if err != nil {
-		panic("File read failed")
-	}
-
-	result1 := Part1(numbers)
-	fmt.Println("Part 1:", result1)
-}
-
+// -- Snail Numbers
 type SnailNumber struct {
 	value  int
 	child1 *SnailNumber
@@ -78,23 +69,6 @@ func (n *SnailNumber) hasChildren() bool {
 
 func (n *SnailNumber) isLeaf() bool {
 	return !n.hasChildren()
-}
-
-func NewSmallFishNumber(numbertext string, pc int) (*SnailNumber, int) {
-
-	if numbertext[pc] == '[' {
-
-		l, npc := NewSmallFishNumber(numbertext, pc+1)
-
-		r, npc := NewSmallFishNumber(numbertext, npc+1)
-		return &SnailNumber{child1: l, child2: r}, npc + 1
-
-	}
-
-	a, _ := StringToInt(string(numbertext[pc]))
-
-	return &SnailNumber{value: a}, pc + 1
-
 }
 
 func (n *SnailNumber) Explode(level int, anterior *SnailNumber, toNext *int) (bool, *SnailNumber, *int) {
@@ -154,6 +128,7 @@ func (n *SnailNumber) Split() bool {
 	return done
 }
 
+// reduce redueix el número pas a pas, primer explodes i si no van després fa splits
 func (n *SnailNumber) reduce() {
 	doing := true
 	for doing {
@@ -164,6 +139,7 @@ func (n *SnailNumber) reduce() {
 	}
 }
 
+// magnitude calcula la magnitud del número
 func (n SnailNumber) magnitude() int {
 	if !n.hasChildren() {
 		return n.value
@@ -171,18 +147,21 @@ func (n SnailNumber) magnitude() int {
 	return n.child1.magnitude()*3 + n.child2.magnitude()*2
 }
 
-func (n *SnailNumber) Print(level int) bool {
+// Print no serveix de res però pinta l'expressió
+func (n *SnailNumber) Print() bool {
 	if !n.hasChildren() {
 		fmt.Print(n.value)
 		return true
 	}
 	fmt.Print("[")
-	n.child1.Print(level + 1)
+	n.child1.Print()
 	fmt.Print(",")
-	n.child2.Print(level + 1)
+	n.child2.Print()
 	fmt.Print("]")
 	return true
 }
+
+// --- PART 1
 
 func Part1(numbers []*SnailNumber) int {
 
@@ -200,4 +179,61 @@ func Part1(numbers []*SnailNumber) int {
 	}
 
 	return total.magnitude()
+}
+
+// -- Part 2
+
+func (s *SnailNumber) Clone() *SnailNumber {
+	copia := &SnailNumber{}
+	if s.child1 != nil {
+		copia.child1 = s.child1.Clone()
+		copia.child1.parent = copia
+	}
+	if s.child2 != nil {
+		copia.child2 = s.child2.Clone()
+		copia.child2.parent = copia
+	}
+	copia.value = s.value
+
+	return copia
+}
+
+func Part2(numbers []*SnailNumber) int {
+	max := 0
+	for i := 0; i < len(numbers); i++ {
+		for j := 0; j < len(numbers); j++ {
+			firstNumber := numbers[i].Clone()
+			secondNumber := numbers[j].Clone()
+
+			suma := &SnailNumber{child1: firstNumber, child2: secondNumber}
+			firstNumber.parent = suma
+			secondNumber.parent = suma
+			suma.reduce()
+			value := suma.magnitude()
+			if value > max {
+				max = value
+			}
+		}
+	}
+	return max
+}
+
+const FILENAME = "input"
+
+func main() {
+	numbers, err := readLines(FILENAME)
+	if err != nil {
+		panic("File read failed")
+	}
+
+	result1 := Part1(numbers)
+	fmt.Println("Part 1:", result1)
+
+	numbers, err = readLines(FILENAME)
+	if err != nil {
+		panic("File read failed")
+	}
+
+	result2 := Part2(numbers)
+	fmt.Println("Part 2: ", result2)
 }
