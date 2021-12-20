@@ -102,8 +102,8 @@ func (i Image) Count() int {
 
 func Part1(image Image, enhace Enhace, times int) int {
 
-	// He anat afegint marges fins que el valor es repetia ... XAPUSSA
-	image2 := image.AddBorder(100)
+	// Com a molt cada vegada creix 1 lloc per cada costat, ... XAPUSSA
+	image2 := image.AddBorder(times * 2)
 	border := 1
 
 	for i := 0; i < times; i++ {
