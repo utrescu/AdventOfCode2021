@@ -5,12 +5,13 @@ import (
 	"day21/utils"
 	"fmt"
 	"os"
-	"strings"
+	"regexp"
 )
 
 // readLines reads a whole file into memory
 // and returns a slice of its lines.
 func readLines(path string) ([]Player, error) {
+	var re = regexp.MustCompile(`Player (\d+) starting position: (\d+)`)
 	file, err := os.Open(path)
 	if err != nil {
 		return nil, err
@@ -21,9 +22,8 @@ func readLines(path string) ([]Player, error) {
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := scanner.Text()
-		positiontext := strings.TrimPrefix(line, "Player 1 starting position: ")
-		positiontext = strings.TrimPrefix(positiontext, "Player 2 starting position: ")
-		position, _ := utils.StringToInt(positiontext)
+		match := re.FindStringSubmatch(line)
+		position, _ := utils.StringToInt(match[2])
 		lines = append(lines, Player{position: position})
 	}
 	return lines, scanner.Err()
@@ -118,15 +118,6 @@ func UniversesPerRoll(roll int) int {
 	panic("not possible result!")
 }
 
-func (p Position) String() string {
-	result := ""
-	for i, v := range p.players {
-		result += fmt.Sprintf("player%d: %d ", i, v)
-	}
-	result += fmt.Sprintf("turn %d", p.turn)
-	return result
-}
-
 func Part2(players []Player, endscore int) int {
 
 	rolls := []int{3, 4, 5, 6, 7, 8, 9}
@@ -143,7 +134,6 @@ func Part2(players []Player, endscore int) int {
 	for len(positions) > 0 {
 		current := positions[0]
 		positions = positions[1:]
-		// gfmt.Println("Current:", current.String())
 		for _, roll := range rolls {
 
 			newPosition := current.NewPosition(roll)
@@ -153,8 +143,6 @@ func Part2(players []Player, endscore int) int {
 				positions = append(positions, newPosition)
 			}
 		}
-		// fmt.Println("Després de la primera crema", len(positions))
-
 	}
 	return utils.Max(winners[0], winners[1])
 }
