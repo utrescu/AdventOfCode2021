@@ -128,49 +128,15 @@ func process(alu Alu, commands []Instruction, imp int, round int) (Alu, error) {
 
 }
 
-func Part2(grups [][]Instruction) string {
-
-	alu := NewAlu([]string{"x", "y", "z", "w"})
-
-	toDo := make(map[string]Alu)
-	toDo[alu.String()] = alu
-	round := 0
-	for _, grup := range grups {
-		fmt.Println("round", round)
-		newtoDo := make(map[string]Alu)
-		for _, alu := range toDo {
-			for i := 1; i < 10; i++ {
-				oldAlu := alu.Clone()
-				newalu, err := process(oldAlu, grup, i, round)
-				if err == nil {
-					if v, ok := newtoDo[newalu.String()]; ok {
-						if v.Result > newalu.Result {
-							newtoDo[newalu.String()] = newalu
-						}
-					} else {
-						newtoDo[newalu.String()] = newalu
-					}
-				}
-			}
-		}
-		toDo = newtoDo
-		round++
-	}
-
-	var min string = "99999999999999"
-	for _, v := range toDo {
-		if v.variables["z"] == 0 {
-			fmt.Println(v.String())
-			if v.Result < min {
-				min = v.Result
-			}
-		}
-	}
-
-	return min
+func greater(a, b string) bool {
+	return a > b
 }
 
-func Part1(grups [][]Instruction) string {
+func lower(a, b string) bool {
+	return a < b
+}
+
+func Part1(grups [][]Instruction, digits []int, comparator func(string, string) bool, minvalue string) string {
 
 	alu := NewAlu([]string{"x", "y", "z", "w"})
 
@@ -178,15 +144,14 @@ func Part1(grups [][]Instruction) string {
 	toDo[alu.String()] = alu
 	round := 0
 	for _, grup := range grups {
-		fmt.Println("round", round)
 		newtoDo := make(map[string]Alu)
 		for _, alu := range toDo {
-			for i := 9; i > 0; i-- {
+			for _, i := range digits {
 				oldAlu := alu.Clone()
 				newalu, err := process(oldAlu, grup, i, round)
 				if err == nil {
 					if v, ok := newtoDo[newalu.String()]; ok {
-						if v.Result < newalu.Result {
+						if comparator(newalu.Result, v.Result) {
 							newtoDo[newalu.String()] = newalu
 						}
 					} else {
@@ -199,11 +164,10 @@ func Part1(grups [][]Instruction) string {
 		round++
 	}
 
-	var max string = ""
+	var max string = minvalue
 	for _, v := range toDo {
 		if v.variables["z"] == 0 {
-			fmt.Println(v.String())
-			if v.Result > max {
+			if comparator(v.Result, max) {
 				max = v.Result
 			}
 		}
@@ -221,8 +185,8 @@ func main() {
 		panic("File read failed")
 	}
 
-	result1 := Part1(instructs)
+	result1 := Part1(instructs, []int{9, 8, 7, 6, 5, 4, 3, 2, 1}, greater, "00000000000000")
 	fmt.Println("Part 1:", result1)
-	result2 := Part2(instructs)
+	result2 := Part1(instructs, []int{1, 2, 3, 4, 5, 6, 7, 8, 9}, lower, "99999999999999")
 	fmt.Println("Part 2:", result2)
 }
